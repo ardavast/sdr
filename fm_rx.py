@@ -7,7 +7,7 @@
 #
 # Example usage:
 # timeout 10 rtl_sdr -f 104e6 -s 1920000 jazzfm.raw
-# python3 fm.py complex64 jazzfm.raw jazzfm.wav
+# python3 fm_rx.py complex64 jazzfm.raw jazzfm.wav
 # mplayer jazzfm.wav
 
 # Format tips:
