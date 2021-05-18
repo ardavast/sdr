@@ -56,7 +56,6 @@ if rfFile.name.endswith('.wav') and data[0:4] == b'RIFF':
         error("Can't find the data section in the WAV header")
     else:
         hdrLen += 8
-    print(f'skip {hdrLen}')
     data = data[hdrLen:]
 
 # After this block the data will consist of complex64 IQ samples
@@ -80,6 +79,9 @@ data = np.angle(data[1:] * np.conj(data[:-1]))
 data *= IF_RATE / (2 * np.pi * MAX_DEV)
 
 # FM deemphasis filter, the coefficients are taken from: https://git.io/Js49p
+# tau = 50e-6
+#btaps = [0.005181393759023543, 0.005181393759023543]
+#ataps = [1.0, -0.989637212481953]
 # tau = 75e-6
 btaps = [0.03357008637245808, 0.03357008637245808]
 ataps = [1.0, -0.9328598272550838]
