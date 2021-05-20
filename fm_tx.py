@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Offline FM transmiiter
-# Expects a 32k 16-bit mono .wav file as input
+# Expects a mono, 32kHz, 16-bit signed WAV file as input
 #
 # Example usage:
 # ffmpeg -i song.mp3 -ac 1 -ar 32000 song.wav
@@ -32,40 +32,57 @@ def complexToInterleaved(x):
     y[1::2] = x.imag
     return y
 
-if len(sys.argv) < 3:
-    exit(f'Usage: {__file__} {{uint8|complex64}} <WAV file> <RF file>')
+if len(sys.argv) < 4:
+    exit(f'Usage: {__file__} {{uint8|complex64}} <WAV file> <Baseband file> <RF file>')
 
 wavFile = Path(sys.argv[1])
-rfFile = Path(sys.argv[2])
+basebandFile = Path(sys.argv[2])
+rfFile = Path(sys.argv[3])
 
 # Load the entire WAV file into memory
-data = wavFile.read_bytes()
+wavRate, wavData = wavfile.read(wavFile)
+if not (wavData.shape[1] == 2 and
+        wavRate == 32000 and
+        wavData.dtype == np.int16):
+    sys.exit('Input format must be: stereo, 32kHz, 16-bit signed')
 
-# Remove the WAV header if present
-if data[0:4] == b'RIFF':
-    hdrLen = data.find(b'data')
-    if hdrLen == -1:
-        sys.exit("Can't find the data section in the WAV header")
-    else:
-        hdrLen += 8
-    data = data[hdrLen:]
+length = wavData.shape[0]
+left = wavData[:,0]
+right = wavData[:,1]
 
-# After this block the data will consist of float32 samples
-data = np.frombuffer(data, dtype=np.int16)
-data = data.astype(np.float32)
-data = (data + 0.5) / 32767.5
+# Convert the input data to normalized np.float32
+left = left.astype(np.float32)
+left = (left + 0.5) / 32767.5
+
+right = right.astype(np.float32)
+right = (right + 0.5) / 32767.5
+
+lpr = left + right
+lmr = left - right
 
 # Interpolate to 320k
-data = signal.resample(data, len(data) * 10)
+length *= 10
+lpr = signal.resample(lpr, length)
+lmr = signal.resample(lmr, length)
 
 # FM preemphasis filter
 # TODO
 
+pilot = np.cos(2 * np.pi * 19e3 / IF_RATE * np.arange(length))
+lmr = lmr*np.cos(2 * np.pi * 38e3 / IF_RATE * np.arange(length))
+
+data = 0.3*lpr + 0.3*pilot + 0.3*lmr
+
 # FM modulation
-data = np.exp(1j*(2*np.pi * np.cumsum(data * MAX_DEV/IF_RATE)))
+data = np.exp(1j*(2*np.pi * np.cumsum(data * MAX_DEV/IF_RATE)),
+              dtype=np.complex64)
+
+# write baseband file
+basebandFile.write_bytes(data)
 
 # Interpolate to 8M
-data = signal.resample(data, len(data) * 25)
+length *= 25
+data = signal.resample(data, length)
 
 # Write the output as a 8M 8-bit IQ file
 data = complexToInterleaved(data)
