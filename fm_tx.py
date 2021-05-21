@@ -21,6 +21,7 @@ import scipy.signal as signal
 import scipy.io.wavfile as wavfile
 import matplotlib.pyplot as plt
 
+
 RF_RATE = 8000000
 IF_RATE = RF_RATE / 25
 AUDIO_RATE = IF_RATE / 10
@@ -50,35 +51,42 @@ length = wavData.shape[0]
 left = wavData[:,0]
 right = wavData[:,1]
 
-# Convert the input data to normalized np.float32
-left = left.astype(np.float32)
+# Convert the input data to normalized floats
+left = left.astype(np.float)
 left = (left + 0.5) / 32767.5
 
-right = right.astype(np.float32)
+right = right.astype(np.float)
 right = (right + 0.5) / 32767.5
+
+# Interpolate to 320k
+length *= 10
+left = signal.resample(left, length)
+right = signal.resample(right, length)
+
+# FM preemphasis filter, the coefficients are taken from: https://git.io/Js49p
+# tau = 50e-6
+#btaps = [29.498236311937575, -27.70989987735248]
+#ataps = [1.0, 0.7883364345850924]
+# tau = 75e-6
+btaps = [43.80803296614535, -42.01969653156026]
+ataps = [1.0, 0.7883364345850924]
+left = signal.lfilter(btaps, ataps, left)
+right = signal.lfilter(btaps, ataps, right)
 
 lpr = left + right
 lmr = left - right
 
-# Interpolate to 320k
-length *= 10
-lpr = signal.resample(lpr, length)
-lmr = signal.resample(lmr, length)
-
-# FM preemphasis filter
-# TODO
-
 pilot = np.cos(2 * np.pi * 19e3 / IF_RATE * np.arange(length))
 lmr = lmr*np.cos(2 * np.pi * 38e3 / IF_RATE * np.arange(length))
 
-data = 0.3*lpr + 0.3*pilot + 0.3*lmr
+data = 0.45*lpr + 0.1*pilot + 0.45*lmr
+data /= 2
 
 # FM modulation
-data = np.exp(1j*(2*np.pi * np.cumsum(data * MAX_DEV/IF_RATE)),
-              dtype=np.complex64)
+data = np.exp(1j*(2*np.pi * np.cumsum(data * MAX_DEV/IF_RATE)))
 
 # write baseband file
-basebandFile.write_bytes(data)
+basebandFile.write_bytes(data.astype(np.complex64))
 
 # Interpolate to 8M
 length *= 25
