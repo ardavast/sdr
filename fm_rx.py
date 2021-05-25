@@ -41,7 +41,7 @@ rfFile = Path(sys.argv[2])
 wavFile = Path(sys.argv[3])
 
 # Load the entire file into memory
-_, data = utils.bbRead(rfFile, rfFmt)
+_, data = utils.readFile(rfFile, rfFmt, IQfile=True)
 
 # Decimate to 192k
 data = signal.decimate(data, 10, ftype='fir')
@@ -67,4 +67,4 @@ data = signal.lfilter(btaps, ataps, data)
 data = signal.decimate(data, 6, ftype='fir')
 
 # Write the output as a 32k 16-bit WAV file
-utils.bbWrite(data, wavFile, np.int16, int(AUDIO_RATE), wavFormat=True)
+utils.writeFile(data, wavFile, np.int16, int(AUDIO_RATE), wavFile=True)

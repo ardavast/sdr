@@ -4,7 +4,7 @@
 import numpy as np
 import scipy.io.wavfile as wavfile
 
-validDTypes = [np.uint8, np.int8, np.int16, np.float32, np.complex64]
+validDTypes = (np.uint8, np.int8, np.int16, np.float32, np.complex64)
 
 def interleaveComplex(c):
     if c.dtype != np.complex:
@@ -16,11 +16,11 @@ def interleaveComplex(c):
 
 def toFloat(data):
     if data.dtype == np.uint8:
-        return (data.astype(float) - 127.5) / 127.5
+        return (data.astype(np.float) - 127.5) / 127.5
     elif data.dtype == np.int8:
-        return (data.astype(float) + 0.5) / 127.5
+        return (data.astype(np.float) + 0.5) / 127.5
     elif data.dtype == np.int16:
-        return (data.astype(float) + 0.5) / 32767.5
+        return (data.astype(np.float) + 0.5) / 32767.5
     elif data.dtype == np.float32:
         return data.astype(dtype)
     else:
@@ -41,51 +41,58 @@ def fromFloat(data, dtype):
     else:
         raise ValueError(f"Unsupported dtype: {dtype}")
 
-def bbRead(filename, dtype=None):
+def readFile(filename, dtype=None, IQfile=False):
     try:
         rate, data = wavfile.read(filename)
-        filetype = 'wav'
+        wavFile = True
     except Exception:
-        filetype = 'raw'
+        wavFile = False
 
-    if filetype == 'wav':
-        if data.shape[1] != 2:
-            raise ValueError(f"{filename} is not an I/Q file")
+    if wavFile:
         if data.dtype not in validDTypes:
             raise ValueError(f"Unsupported dtype: {data.dtype}")
-        I = toFloat(data[:,0])
-        Q = toFloat(data[:,1])
-        data = I + Q * 1j
-        return rate, data
+
+        if (not 0 < len(data.shape) <= 2 or
+            len(data.shape) == 2 and data.shape[1] not in [1, 2]):
+            raise ValueError(f'Invalid shape: {data.shape}')
+
+        data = toFloat(data)
+        if len(data.shape) > 1 and data.shape[1] == 2:
+            if IQFormat:
+                data = data[:,0] + 1j * data[:,1]
     else:
+        rate = None
+
         if not dtype:
             raise ValueError("dtype must be set for raw files")
         dtype = np.dtype(dtype)
         if dtype not in validDTypes:
             raise ValueError(f"Unsupported dtype: {dtype}")
-        data = np.fromfile(filename, dtype=dtype)
-        if data.dtype != np.complex:
-            data = toFloat(data)
-            data = data.view(np.complex)
-    return None, data
 
-def bbWrite(data, filename, dtype, rate=None, wavFormat=False):
-    if wavFormat and not rate:
-        raise ValueError("wavFormat must be used with rate")
+        data = np.fromfile(filename, dtype=dtype)
+        data = toFloat(data)
+        if IQfile:
+            data = data.view(np.complex)
+
+    return rate, data
+
+def writeFile(data, filename, dtype, rate=None, wavFile=False):
+    if wavFile and not rate:
+        raise ValueError("wavFile must be used with rate")
 
     dtype = np.dtype(dtype)
     if dtype not in validDTypes:
         raise ValueError(f"Unsupported dtype: {dtype}")
 
-    if dtype == np.complex64:
-        if wavFormat:
+    if dtype == np.complex:
+        if wavFile:
             raise TypeError("Can't write complex data to WAV file")
         if data.dtype != np.complex:
             raise TypeError("Can't write real data to complex file")
         data.tofile(filename, dtype=np.complex64)
     else:
         if data.dtype == 'complex':
-            if wavFormat:
+            if wavFile:
                 I = fromFloat(data.real, dtype)
                 Q = fromFloat(data.imag, dtype)
                 data = np.column_stack(I, Q)
@@ -96,7 +103,7 @@ def bbWrite(data, filename, dtype, rate=None, wavFormat=False):
                 data.tofile(filename)
         else:
             data = fromFloat(data, dtype)
-            if wavFormat:
+            if wavFile:
                 wavfile.write(filename, rate, data)
             else:
                 data.tofile(filename, dtype=dtype)
