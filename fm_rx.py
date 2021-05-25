@@ -18,8 +18,8 @@
 # CAUTION: with the wrong parameters "RIP Headphone Users" situations are
 # possible, so be careful with the audio levels.
 
+import argparse
 import sys
-from pathlib import Path
 
 import numpy as np
 import scipy.signal as signal
@@ -30,18 +30,24 @@ IF_RATE = RF_RATE / 10
 AUDIO_RATE = IF_RATE / 6
 MAX_DEV = 75e3
 
-if len(sys.argv) < 3:
-    sys.exit(f'Usage: {__file__} {{uint8|complex64}} <RF file> <WAV file>')
-
-rfFmt = sys.argv[1]
-if rfFmt not in ['uint8', 'complex64']:
-    sys.exit(f'Usage: {__file__} {{uint8|complex64}} <RF file> <WAV file>')
-
-rfFile = Path(sys.argv[2])
-wavFile = Path(sys.argv[3])
+parser = argparse.ArgumentParser(description='Offline FM receiver')
+parser.add_argument('inputFile', type=str,
+    help='Path to a I/Q file in raw or WAV format.  Sample rate must be '
+         '1.92 MHz.  With raw files the --dtype option is required.')
+parser.add_argument('outputFile', type=str,
+    help='Output path (WAV mono 32 kHz 16 bit signed')
+parser.add_argument('--dtype', type=str,
+                    choices=['uint8', 'int8', 'int16', 'float32', 'complex64'])
+args = parser.parse_args()
 
 # Load the entire file into memory
-_, data = utils.readFile(rfFile, rfFmt, IQfile=True)
+try:
+    _, data = utils.readFile(args.inputFile, args.dtype, IQfile=True)
+except Exception as e:
+    sys.exit(e)
+
+if data.dtype != np.complex:
+    sys.exit(f'{args.inputFile} is not an I/Q file')
 
 # Decimate to 192k
 data = signal.decimate(data, 10, ftype='fir')
@@ -67,4 +73,4 @@ data = signal.lfilter(btaps, ataps, data)
 data = signal.decimate(data, 6, ftype='fir')
 
 # Write the output as a 32k 16-bit WAV file
-utils.writeFile(data, wavFile, np.int16, int(AUDIO_RATE), wavFile=True)
+utils.writeFile(data, args.outputFile, np.int16, int(AUDIO_RATE), wavFile=True)
