@@ -55,15 +55,16 @@ data = signal.decimate(data, 10, ftype='fir')
 # Demodulate the FM signal
 # In the simplest possible terms: This takes the difference between the phase
 # of each complex sample and the phase of the previous sample, and then scales
-# it.  A very good explanation of the expression below can be found at:
+# that phase difference to get the correct amplitude of the message signal.
+# A very good explanation of the expression below can be found at
 # https://dsp.stackexchange.com/a/2613/31366
 data = np.angle(data[1:] * np.conj(data[:-1]))
 data *= IF_RATE / (2 * np.pi * MAX_DEV)
 
 # FM deemphasis filter, the coefficients are taken from: https://git.io/Js49p
 # tau = 50e-6
-#btaps = [0.005181393759023543, 0.005181393759023543]
-#ataps = [1.0, -0.989637212481953]
+# btaps = [0.005181393759023543, 0.005181393759023543]
+# ataps = [1.0, -0.989637212481953]
 # tau = 75e-6
 btaps = [0.03357008637245808, 0.03357008637245808]
 ataps = [1.0, -0.9328598272550838]
