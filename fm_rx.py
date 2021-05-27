@@ -32,12 +32,16 @@ MAX_DEV = 75e3
 
 parser = argparse.ArgumentParser(description='Offline FM receiver')
 parser.add_argument('inputFile', type=str,
-    help='Path to a I/Q file in raw or WAV format.  Sample rate must be '
-         '1.92 MHz.  With raw files the --dtype option is required.')
+                    help='Path to an I/Q file in raw or WAV format.  Sample '
+                    'rate must be 1.92 MHz.  With raw files the --dtype '
+                    'option is required.')
+
 parser.add_argument('outputFile', type=str,
-    help='Output path (WAV mono 32 kHz 16 bit signed')
+                    help='Output path (WAV mono 32 kHz 16 bit signed)')
+
 parser.add_argument('--dtype', type=str,
                     choices=['uint8', 'int8', 'int16', 'float32', 'complex64'])
+
 args = parser.parse_args()
 
 # Load the entire file into memory
