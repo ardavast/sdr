@@ -58,7 +58,7 @@ def readFile(filename, dtype=None, IQfile=False):
 
         data = toFloat(data)
         if len(data.shape) > 1 and data.shape[1] == 2:
-            if IQFormat:
+            if IQfile:
                 data = data[:,0] + 1j * data[:,1]
     else:
         rate = None
