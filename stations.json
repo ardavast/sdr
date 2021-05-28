@@ -1,324 +1,324 @@
 [
     {
-        "frequency": 87.6,
+        "frequency": 87600000,
         "name": "Радио Зорана",
         "location": "кв. Горна Баня",
-        "power": "230 W",
+        "power": 230,
         "dx": false
     },
     {
-        "frequency": 88.0,
+        "frequency": 88000000,
         "name": "Алма Матер Classic FM",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 88.4,
+        "frequency": 88400000,
         "name": "Bulgaria ON AIR",
         "location": "Сграда „Енергопроект“",
-        "power": "250 W",
+        "power": 250,
         "dx": false
     },
     {
-        "frequency": 88.8,
+        "frequency": 88800000,
         "name": "БНР програма Христо Ботев",
         "location": "Панагюрище РРС Братия",
-        "power": "500 W",
+        "power": 500,
         "dx": true
     },
     {
-        "frequency": 89.1,
+        "frequency": 89100000,
         "name": "Z-Rock",
         "location": "Хотел „Копитото“",
-        "power": "240 W",
+        "power": 240,
         "dx": false
     },
     {
-        "frequency": 89.5,
+        "frequency": 89500000,
         "name": "Радио Energy",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 90.0,
+        "frequency": 90000000,
         "name": "Дарик Носталжи",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 90.4,
+        "frequency": 90400000,
         "name": "БНР Радио София",
         "location": "Своге РРС Своге-1",
-        "power": "150 W",
+        "power": 150,
         "dx": true
     },
     {
-        "frequency": 91.0,
+        "frequency": 91000000,
         "name": "Радио Антена",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 91.9,
+        "frequency": 91900000,
         "name": "БГ Радио",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 92.2,
+        "frequency": 92200000,
         "name": "БНР програма Христо Ботев",
         "location": "Калофер РРТС вр. Ботев",
-        "power": "10 kW",
+        "power": 10000,
         "dx": true
     },
     {
-        "frequency": 92.4,
+        "frequency": 92400000,
         "name": "Magic FM",
         "location": "Хотел „Маринела“",
-        "power": "400 W",
+        "power": 400,
         "dx": false
     },
     {
-        "frequency": 92.9,
+        "frequency": 92900000,
         "name": "БНР програма Христо Ботев",
         "location": "КРТЦ Витоша - вр. Копитото",
-        "power": "10 kW",
+        "power": 10000,
         "dx": false
     },
     {
-        "frequency": 93.4,
+        "frequency": 93400000,
         "name": "Радио Melody",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 93.9,
+        "frequency": 93900000,
         "name": "Радио K2",
         "location": null,
         "power": null,
         "dx": false
     },
     {
-        "frequency": 94.3,
+        "frequency": 94300000,
         "name": "БНР програма Христо Ботев",
         "location": "Своге РРС Своге-1",
-        "power": "150 W",
+        "power": 150,
         "dx": true
     },
     {
-        "frequency": 94.5,
+        "frequency": 94500000,
         "name": "БНР Радио София",
         "location": "КРТЦ Витоша - вр. Копитото",
-        "power": "1 kW",
+        "power": 1000,
         "dx": false
     },
     {
-        "frequency": 94.9,
+        "frequency": 94900000,
         "name": "Радио FM+",
         "location": "Хотел „Копитото“",
-        "power": "200 W",
+        "power": 200,
         "dx": false
     },
     {
-        "frequency": 95.7,
+        "frequency": 95700000,
         "name": "Радио Nova News",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 96.2,
+        "frequency": 96200000,
         "name": "The Voice",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "400 W",
+        "power": 400,
         "dx": false
     },
     {
-        "frequency": 96.7,
+        "frequency": 96700000,
         "name": "Радио Вероника",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "900 W",
+        "power": 900,
         "dx": false
     },
     {
-        "frequency": 97.0,
+        "frequency": 97000000,
         "name": "Bulgaria ON AIR",
         "location": "Перник кв. „Могиличе“ ул. „Божур“ 4",
-        "power": "100 W",
+        "power": 100,
         "dx": true
     },
     {
-        "frequency": 97.6,
+        "frequency": 97600000,
         "name": "Радио Витоша",
         "location": "Хотел „Маринела“",
-        "power": "510 W",
+        "power": 510,
         "dx": false
     },
     {
-        "frequency": 98.3,
+        "frequency": 98300000,
         "name": "Радио 1 Рок",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 98.8,
+        "frequency": 98800000,
         "name": "РТС Радио Београд 1",
         "location": "Сърбия Цариброд",
         "power": null,
         "dx": true
     },
     {
-        "frequency": 99.1,
+        "frequency": 99100000,
         "name": "Радио Веселина",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 99.5,
+        "frequency": 99500000,
         "name": "БНР програма Христо Ботев",
         "location": "Берковица РРТС Петрохан",
-        "power": "7 kW",
+        "power": 7000,
         "dx": true
     },
     {
-        "frequency": 99.7,
+        "frequency": 99700000,
         "name": "Радио City",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 100.1,
+        "frequency": 100100000,
         "name": "БНР програма Хоризонт",
         "location": "Панагюрище РРС Братия",
-        "power": "500 W",
+        "power": 500,
         "dx": true
     },
     {
-        "frequency": 100.3,
+        "frequency": 100300000,
         "name": "Радио Fresh!",
         "location": "Хотел „Копитото“",
-        "power": "200 W",
+        "power": 200,
         "dx": false
     },
     {
-        "frequency": 100.9,
+        "frequency": 100900000,
         "name": "БНР програма Хоризонт",
         "location": "Калофер РРТС вр. Ботев",
-        "power": "10 kW",
+        "power": 10000,
         "dx": true
     },
     {
-        "frequency": 101.1,
+        "frequency": 101100000,
         "name": "bTV Радио",
         "location": "Хотел „Копитото“",
-        "power": "178 W",
+        "power": 178,
         "dx": false
     },
     {
-        "frequency": 101.4,
+        "frequency": 101400000,
         "name": "БНР програма Хоризонт",
         "location": "Берковица РРТС Петрохан",
-        "power": "10 kW",
+        "power": 10000,
         "dx": true
     },
     {
-        "frequency": 101.7,
+        "frequency": 101700000,
         "name": "Радио Nova",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 102.1,
+        "frequency": 102100000,
         "name": "БНР програма Хоризонт",
         "location": "Кюстендил РРТС вр. Виден",
-        "power": "10 kW",
+        "power": 10000,
         "dx": true
     },
     {
-        "frequency": 102.4,
+        "frequency": 102400000,
         "name": "БНР програма Хоризонт",
         "location": "Своге РРС Своге-1",
-        "power": "150 W",
+        "power": 150,
         "dx": true
     },
     {
-        "frequency": 103.0,
+        "frequency": 103000000,
         "name": "БНР програма Хоризонт",
         "location": "КРТЦ Витоша - вр. Копитото",
-        "power": "10 kW",
+        "power": 10000,
         "dx": false
     },
     {
-        "frequency": 103.6,
+        "frequency": 103600000,
         "name": "Радио Фокус",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 104.0,
+        "frequency": 104000000,
         "name": "Jazz FM Радио",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 105.0,
+        "frequency": 105000000,
         "name": "Дарик Радио",
         "location": "Хотел „Копитото“",
-        "power": "2 kW",
+        "power": 2000,
         "dx": false
     },
     {
-        "frequency": 105.6,
+        "frequency": 105600000,
         "name": "Радио Европа",
         "location": "Хотел „Копитото“",
-        "power": "200 W",
+        "power": 200,
         "dx": false
     },
     {
-        "frequency": 106.0,
+        "frequency": 106000000,
         "name": "Радио 1",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 106.4,
+        "frequency": 106400000,
         "name": "Дарик Радио",
         "location": "Берковица РРТС Петрохан",
-        "power": "500 W",
+        "power": 500,
         "dx": true
     },
     {
-        "frequency": 106.9,
+        "frequency": 106900000,
         "name": "Радио N-Joy",
         "location": "ТВ кула - бул. „Пейо К. Яворов“",
-        "power": "500 W",
+        "power": 500,
         "dx": false
     },
     {
-        "frequency": 107.4,
+        "frequency": 107400000,
         "name": "Дарик Радио",
         "location": "Панагюрище РРС Братия",
-        "power": "500 W",
+        "power": 500,
         "dx": true
     },
     {
-        "frequency": 107.9,
+        "frequency": 107900000,
         "name": "Радио Ultra (Перник)",
         "location": "Перник Синдикален дом",
-        "power": "100 W",
+        "power": 100,
         "dx": true
     }
 ]

@@ -29,22 +29,29 @@ for row in soup.find_all('tr', {'class': ['rt0', 'rt1']}):
     freq = row.findChildren('td', {'class': cFreq})[0].text.strip()
     try:
         freq = float(freq)
-        if not 87.5 <= freq <= 108.0:
-            continue
     except ValueError:
         continue
+    if not 87.5 <= freq <= 108:
+        continue
+    freq = int(freq * 1e6)
 
     # Extract name
     name = row.findChildren('td', {'class': cName})[0].text.strip()
 
-    # Extract location and power
     info = row.findChildren('td', {'class': cInfo})[0].text.split(',')
+
+    # Extract location
     location = ''.join(info[:-2]).strip()
     if not location:
         location = None
 
+    # Extract power
     power = info[-2].strip()
-    if not re.match(r'^\d+\s+k?W$', power):
+    if m := re.match(r'^(\d+)\s+(k?W)$', power):
+        power = int(m.group(1))
+        if m.group(2) == 'kW':
+            power *= 1000
+    else:
         power = None
 
     stations.append({'frequency': freq,
