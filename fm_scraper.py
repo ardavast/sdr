@@ -44,7 +44,7 @@ for row in soup.find_all('tr', {'class': ['rt0', 'rt1']}):
         location = None
 
     power = info[-2].strip()
-    if not re.match('^\d+\s+k?W$', power):
+    if not re.match(r'^\d+\s+k?W$', power):
         power = None
 
     stations.append({'frequency': freq,
