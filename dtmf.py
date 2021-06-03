@@ -5,11 +5,12 @@ import os
 import random
 import time
 import numpy as np
-import pyaudio
 
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
+
+import sounddevice as sd
 
 key2num = {
         pygame.K_1: '1',
@@ -56,10 +57,8 @@ class NCO:
 
 sampleRate = 44100
 amp = 0.2
-gAudioBuffer = np.zeros(64, dtype=np.float32)
 currentKeys = []
 lastKeyReleased = None
-phase = 0
 rampCounterUp = 0
 rampCounterUpEn = False
 rampCounterDown = 0
@@ -73,8 +72,7 @@ def makeTone(num, length):
     return (hNCO.getWave(0.5 * amp, f1, length) +
             vNCO.getWave(0.5 * amp, f2, length))
 
-def audio_cb(input_data, frame_count, time_info, status_flag):
-    global gAudioBuffer
+def audioCallback(outdata, frames, time, status):
     global currentKeys
     global lastKeyReleased
     global rampCounterUp
@@ -83,42 +81,40 @@ def audio_cb(input_data, frame_count, time_info, status_flag):
     global rampCounterDownEn
 
     if rampCounterDownEn:
-        if rampCounterDown - frame_count > 0:
-            envelope = 1/220 * np.arange(rampCounterDown, rampCounterDown - frame_count, -1)
+        if rampCounterDown - frames > 0:
+            envelope = 1/220 * np.arange(rampCounterDown, rampCounterDown - frames, -1)
         else:
             envelope = 1/220 * np.arange(rampCounterDown, 0, -1)
             rampCounterDownEn = False
 
-        if len(envelope) < len(gAudioBuffer):
-           envelope = np.pad(envelope, (0, len(gAudioBuffer) - len(envelope)))
+        if len(envelope) < len(outdata):
+           envelope = np.pad(envelope, (0, len(outdata) - len(envelope)))
 
-        gAudioBuffer[:] = makeTone(lastKeyReleased, frame_count)
-        gAudioBuffer *= envelope
+        buf = makeTone(lastKeyReleased, frames) * envelope
 
-        rampCounterDown -= frame_count
+        rampCounterDown -= frames
 
     elif currentKeys:
         num = currentKeys[-1]
-        gAudioBuffer[:] = makeTone(num, frame_count)
+        buf = makeTone(num, frames)
 
         if rampCounterUpEn:
-            if rampCounterUp + frame_count < 220:
-                envelope = 1/220 * np.arange(rampCounterUp, rampCounterUp + frame_count, 1)
+            if rampCounterUp + frames < 220:
+                envelope = 1/220 * np.arange(rampCounterUp, rampCounterUp + frames, 1)
             else:
                 envelope = 1/220 * np.arange(rampCounterUp, 220, 1)
                 rampCounterUpEn = False
 
-            if len(envelope) < len(gAudioBuffer):
-               envelope = np.pad(envelope, (0, len(gAudioBuffer) - len(envelope)), mode='edge')
+            if len(envelope) < len(buf):
+               envelope = np.pad(envelope, (0, len(buf) - len(envelope)), mode='edge')
 
-            gAudioBuffer *= envelope
-            rampCounterUp += frame_count
-
-        return (gAudioBuffer, pyaudio.paContinue)
+            buf *= envelope
+            rampCounterUp += frames
     else:
-        gAudioBuffer[:] = np.zeros(frame_count, dtype=np.float32)
+        buf = np.zeros(frames, dtype=np.float32).reshape(-1, 1)
 
-    return (gAudioBuffer, pyaudio.paContinue)
+    buf = buf.reshape(-1, 1)
+    outdata[:] = buf
 
 def main():
     global currentKeys
@@ -128,17 +124,14 @@ def main():
     global rampCounterDown
     global rampCounterDownEn
 
-    p = pyaudio.PyAudio()
-    stream = p.open(output=True,
-                    channels=1,
-                    rate=sampleRate,
-                    format=pyaudio.paFloat32,
-                    frames_per_buffer=64,
-                    stream_callback=audio_cb)
-
     pygame.init()
     screen = pygame.display.set_mode((320, 240))
-    stream.start_stream()
+
+    sd.OutputStream(
+        samplerate=44100,
+        blocksize=64,
+        channels=1,
+        callback=audioCallback).start()
 
     while True:
         for event in pygame.event.get():
