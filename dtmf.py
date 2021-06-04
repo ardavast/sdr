@@ -3,27 +3,15 @@
 
 import os
 import random
+import sys
 import time
+
 import numpy as np
-
-from os import environ
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-import pygame
-
 import sounddevice as sd
 
-key2num = {
-        pygame.K_1: '1',
-        pygame.K_2: '2',
-        pygame.K_3: '3',
-        pygame.K_4: '4',
-        pygame.K_5: '5',
-        pygame.K_6: '6',
-        pygame.K_7: '7',
-        pygame.K_8: '8',
-        pygame.K_9: '9',
-        pygame.K_0: '0'
-}
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 
 num2freq = {
     '1': (697, 1209),
@@ -116,52 +104,62 @@ def audioCallback(outdata, frames, time, status):
     buf = buf.reshape(-1, 1)
     outdata[:] = buf
 
-def main():
-    global currentKeys
-    global lastKeyReleased
-    global rampCounterUp
-    global rampCounterUpEn
-    global rampCounterDown
-    global rampCounterDownEn
+class MainWindow(QMainWindow):
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
 
-    pygame.init()
-    screen = pygame.display.set_mode((320, 240))
+        sd.OutputStream(
+            samplerate=44100,
+            blocksize=64,
+            channels=1,
+            callback=audioCallback).start()
 
-    sd.OutputStream(
-        samplerate=44100,
-        blocksize=64,
-        channels=1,
-        callback=audioCallback).start()
+        self.key2num = {
+            QtCore.Qt.Key_1: '1',
+            QtCore.Qt.Key_2: '2',
+            QtCore.Qt.Key_3: '3',
+            QtCore.Qt.Key_4: '4',
+            QtCore.Qt.Key_5: '5',
+            QtCore.Qt.Key_6: '6',
+            QtCore.Qt.Key_7: '7',
+            QtCore.Qt.Key_8: '8',
+            QtCore.Qt.Key_9: '9',
+            QtCore.Qt.Key_0: '0',
+        }
 
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key in [pygame.K_1, pygame.K_2, pygame.K_3,
-                                 pygame.K_4, pygame.K_5, pygame.K_6,
-                                 pygame.K_7, pygame.K_8, pygame.K_9,
-                                 pygame.K_0]:
-                    if not currentKeys:
-                        rampCounterUpEn = True
-                        rampCounterUp = 0
-                    currentKeys.append(key2num[event.key])
+        self.setWindowTitle('DTMF')
 
-            elif event.type == pygame.KEYUP:
-                if event.key in [pygame.K_1, pygame.K_2, pygame.K_3,
-                                 pygame.K_4, pygame.K_5, pygame.K_6,
-                                 pygame.K_7, pygame.K_8, pygame.K_9,
-                                 pygame.K_0]:
-                    while key2num[event.key] in currentKeys:
-                        currentKeys.remove(key2num[event.key])
-                    lastKeyReleased = key2num[event.key]
-                    if not currentKeys:
-                        rampCounterDownEn = True
-                        rampCounterDown = 220
+    def keyPressEvent(self, e):
+        global currentKeys
+        global rampCounterUp
+        global rampCounterUpEn
 
-            elif event.type == pygame.QUIT:
-                raise SystemExit(1)
+        key = e.key()
+        if key in self.key2num:
+            if not e.isAutoRepeat():
+                if not currentKeys:
+                    rampCounterUpEn = True
+                    rampCounterUp = 0
+                currentKeys.append(self.key2num[key])
 
-        prevKeys = currentKeys
-        pygame.time.wait(10)
+    def keyReleaseEvent(self, e):
+        global currentKeys
+        global lastKeyReleased
+        global rampCounterDown
+        global rampCounterDownEn
+
+        key = e.key()
+        if key in self.key2num:
+            if not e.isAutoRepeat():
+                while self.key2num[key] in currentKeys:
+                    currentKeys.remove(self.key2num[key])
+                lastKeyReleased = self.key2num[key]
+                if not currentKeys:
+                    rampCounterDownEn = True
+                    rampCounterDown = 220
 
 if __name__ == '__main__':
-    main()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
