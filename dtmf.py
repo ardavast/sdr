@@ -32,16 +32,11 @@ class NCO:
         self.phase = 0
         self.wavetable = np.sin(2*np.pi/sampleRate * np.arange(sampleRate))
 
-    def getWave(self, amp, freq, length):
-        wave = np.zeros(length)
-
-        for i in range(length):
-            wave[i] = amp * self.wavetable[self.phase]
-            self.phase += freq
-            if self.phase >= self.sampleRate:
-                self.phase -= self.sampleRate
-
-        return wave
+    def getWave(self, freq, length):
+        step = (2 * np.pi * freq) / self.sampleRate
+        phases = self.phase + np.repeat(step, length).cumsum()
+        self.phase = phases[-1] % (2 * np.pi)
+        return np.sin(phases)
 
 sampleRate = 44100
 amp = 0.2
@@ -57,8 +52,8 @@ vNCO = NCO(sampleRate)
 
 def makeTone(num, length):
     f1, f2 = num2freq[num]
-    return (hNCO.getWave(0.5 * amp, f1, length) +
-            vNCO.getWave(0.5 * amp, f2, length))
+    return amp * (0.5 * hNCO.getWave(f1, length) +
+                  0.5 * vNCO.getWave(f2, length))
 
 def audioCallback(outdata, frames, time, status):
     global currentKeys
