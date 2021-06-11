@@ -124,8 +124,8 @@ class MainWindow(QMainWindow):
 class Audio:
     def __init__(self, sampleRate, amp):
         self.sampleRate = sampleRate
-        self.oscDTMF = OscDTMF(44100)
-        self.envelope = AREnvelope(44100, 0.005, 0.005)
+        self.oscDTMF = OscDTMF(sampleRate)
+        self.envelope = AREnvelope(sampleRate, 0.005, 0.005)
         self.amp = amp
         self.num = None
 
