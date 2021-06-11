@@ -40,8 +40,15 @@ class OscDTMF:
             '7': (852, 1209),
             '8': (852, 1336),
             '9': (852, 1477),
+            '*': (941, 1209),
             '0': (941, 1336),
+            '#': (941, 1477),
+            'A': (697, 1633),
+            'B': (770, 1633),
+            'C': (852, 1633),
+            'D': (941, 1633),
         }[num]
+
         return 0.5 * (self.oscH.get(freqH, length) +
                       self.oscV.get(freqV, length))
 
@@ -87,16 +94,22 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         self.key2num = {
-            QtCore.Qt.Key_1: '1',
-            QtCore.Qt.Key_2: '2',
-            QtCore.Qt.Key_3: '3',
-            QtCore.Qt.Key_4: '4',
-            QtCore.Qt.Key_5: '5',
-            QtCore.Qt.Key_6: '6',
-            QtCore.Qt.Key_7: '7',
-            QtCore.Qt.Key_8: '8',
-            QtCore.Qt.Key_9: '9',
-            QtCore.Qt.Key_0: '0',
+            QtCore.Qt.Key_1:          '1',
+            QtCore.Qt.Key_2:          '2',
+            QtCore.Qt.Key_3:          '3',
+            QtCore.Qt.Key_4:          '4',
+            QtCore.Qt.Key_5:          '5',
+            QtCore.Qt.Key_6:          '6',
+            QtCore.Qt.Key_7:          '7',
+            QtCore.Qt.Key_8:          '8',
+            QtCore.Qt.Key_9:          '9',
+            QtCore.Qt.Key_Asterisk:   '*',
+            QtCore.Qt.Key_0:          '0',
+            QtCore.Qt.Key_NumberSign: '#',
+            QtCore.Qt.Key_A:          'A',
+            QtCore.Qt.Key_B:          'B',
+            QtCore.Qt.Key_C:          'C',
+            QtCore.Qt.Key_D:          'D',
         }
 
         self.currentNums = []
