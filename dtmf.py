@@ -65,19 +65,21 @@ class AREnvelope:
         for i in range(length):
             if self.state == 'attack':
                 if self.attackSamples and self.amp < 1:
-                    buf.append(self.amp)
                     self.amp += 1/self.attackSamples
+                    if self.amp > 1:
+                        self.amp = 1
                 else:
                     self.amp = 1
-                    buf.append(self.amp)
             elif self.state == 'release':
                 if self.releaseSamples and self.amp > 0:
-                    buf.append(self.amp)
                     self.amp -= 1/self.releaseSamples
+                    if self.amp < 0:
+                        self.active = False
+                        self.amp = 0
                 else:
                     self.active = False
                     self.amp = 0
-                    buf.append(self.amp)
+            buf.append(self.amp)
 
         return np.array(buf)
 
