@@ -1,100 +1,100 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
 import random
 import sys
-import time
 
 import numpy as np
 import sounddevice as sd
+from matplotlib import pyplot as plt
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 
-num2freq = {
-    '1': (697, 1209),
-    '2': (697, 1336),
-    '3': (697, 1477),
-    '4': (770, 1209),
-    '5': (770, 1336),
-    '6': (770, 1477),
-    '7': (852, 1209),
-    '8': (852, 1336),
-    '9': (852, 1477),
-    '0': (941, 1336)
-}
-
-class NCO:
+class Osc:
     def __init__(self, sampleRate):
         self.sampleRate = sampleRate
         self.phase = 0
-        self.wavetable = np.sin(2*np.pi/sampleRate * np.arange(sampleRate))
 
-    def getWave(self, freq, length):
+    def get(self, freq, length):
         step = (2 * np.pi * freq) / self.sampleRate
         phases = self.phase + np.repeat(step, length).cumsum()
         self.phase = phases[-1] % (2 * np.pi)
         return np.sin(phases)
 
-sampleRate = 44100
-amp = 0.2
-currentKeys = []
-lastKeyReleased = None
-rampCounterUp = 0
-rampCounterUpEn = False
-rampCounterDown = 0
-rampCounterDownEn = False
+class OscDTMF:
+    def __init__(self, sampleRate):
+        self.sampleRate = sampleRate
+        self.oscH = Osc(sampleRate)
+        self.oscV = Osc(sampleRate)
 
-hNCO = NCO(sampleRate)
-vNCO = NCO(sampleRate)
+    def get(self, num, length):
+        freqH, freqV = {
+            '1': (697, 1209),
+            '2': (697, 1336),
+            '3': (697, 1477),
+            '4': (770, 1209),
+            '5': (770, 1336),
+            '6': (770, 1477),
+            '7': (852, 1209),
+            '8': (852, 1336),
+            '9': (852, 1477),
+            '0': (941, 1336),
+        }[num]
+        return 0.5 * (self.oscH.get(freqH, length) +
+                      self.oscV.get(freqV, length))
 
-def makeTone(num, length):
-    f1, f2 = num2freq[num]
-    return amp * (0.5 * hNCO.getWave(f1, length) +
-                  0.5 * vNCO.getWave(f2, length))
+class AREnvelope:
+    def __init__(self, sampleRate, A, R):
+        self.sampleRate = sampleRate
+        self.attackSamples = round(A * sampleRate)
+        self.releaseSamples = round(R * sampleRate)
+        self.amp = 0
+        self.active = False
+
+    def attack(self):
+        self.state = 'attack'
+        self.active = True
+
+    def release(self):
+        self.state = 'release'
+
+    def get(self, length):
+        buf = []
+        for i in range(length):
+            if self.state == 'attack':
+                if self.attackSamples and self.amp < 1:
+                    buf.append(self.amp)
+                    self.amp += 1/self.attackSamples
+                else:
+                    self.amp = 1
+                    buf.append(self.amp)
+            elif self.state == 'release':
+                if self.releaseSamples and self.amp > 0:
+                    buf.append(self.amp)
+                    self.amp -= 1/self.releaseSamples
+                else:
+                    self.active = False
+                    self.amp = 0
+                    buf.append(self.amp)
+
+        return np.array(buf)
+
 
 def audioCallback(outdata, frames, time, status):
-    global currentKeys
-    global lastKeyReleased
-    global rampCounterUp
-    global rampCounterUpEn
-    global rampCounterDown
-    global rampCounterDownEn
-
-    if rampCounterDownEn:
-        if rampCounterDown - frames > 0:
-            envelope = 1/220 * np.arange(rampCounterDown, rampCounterDown - frames, -1)
-        else:
-            envelope = 1/220 * np.arange(rampCounterDown, 0, -1)
-            rampCounterDownEn = False
-
-        if len(envelope) < len(outdata):
-           envelope = np.pad(envelope, (0, len(outdata) - len(envelope)))
-
-        buf = makeTone(lastKeyReleased, frames) * envelope
-
-        rampCounterDown -= frames
-
-    elif currentKeys:
-        num = currentKeys[-1]
-        buf = makeTone(num, frames)
-
-        if rampCounterUpEn:
-            if rampCounterUp + frames < 220:
-                envelope = 1/220 * np.arange(rampCounterUp, rampCounterUp + frames, 1)
-            else:
-                envelope = 1/220 * np.arange(rampCounterUp, 220, 1)
-                rampCounterUpEn = False
-
-            if len(envelope) < len(buf):
-               envelope = np.pad(envelope, (0, len(buf) - len(envelope)), mode='edge')
-
-            buf *= envelope
-            rampCounterUp += frames
+    if currentKeys:
+        buf = oscDTMF.get(currentKeys[-1], frames)
+        env = envelope.get(frames)
+        buf = amp * buf * env
     else:
-        buf = np.zeros(frames, dtype=np.float32).reshape(-1, 1)
+        if envelope.active:
+            if lastKey:
+                buf = oscDTMF.get(lastKey, frames)
+                env = envelope.get(frames)
+                buf = amp * buf * env
+        else:
+            buf = np.zeros(frames)
 
     buf = buf.reshape(-1, 1)
     outdata[:] = buf
@@ -102,12 +102,6 @@ def audioCallback(outdata, frames, time, status):
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-
-        sd.OutputStream(
-            samplerate=44100,
-            blocksize=64,
-            channels=1,
-            callback=audioCallback).start()
 
         self.key2num = {
             QtCore.Qt.Key_1: '1',
@@ -122,36 +116,60 @@ class MainWindow(QMainWindow):
             QtCore.Qt.Key_0: '0',
         }
 
+        self.currentNums = []
         self.setWindowTitle('DTMF')
+        self.audio = Audio(44100, 0.5)
 
     def keyPressEvent(self, e):
-        global currentKeys
-        global rampCounterUp
-        global rampCounterUpEn
-
-        key = e.key()
-        if key in self.key2num:
-            if not e.isAutoRepeat():
-                if not currentKeys:
-                    rampCounterUpEn = True
-                    rampCounterUp = 0
-                currentKeys.append(self.key2num[key])
+        if not e.isAutoRepeat():
+            if e.key() in self.key2num:
+                num = self.key2num[e.key()]
+                self.currentNums.append(num)
+                self.audio.play(num)
 
     def keyReleaseEvent(self, e):
-        global currentKeys
-        global lastKeyReleased
-        global rampCounterDown
-        global rampCounterDownEn
+        if not e.isAutoRepeat():
+            if e.key() in self.key2num:
+                num = self.key2num[e.key()]
+                while num in self.currentNums:
+                    self.currentNums.remove(num)
+                if self.currentNums:
+                    self.audio.play(self.currentNums[-1])
+                else:
+                    self.audio.stop(num)
 
-        key = e.key()
-        if key in self.key2num:
-            if not e.isAutoRepeat():
-                while self.key2num[key] in currentKeys:
-                    currentKeys.remove(self.key2num[key])
-                lastKeyReleased = self.key2num[key]
-                if not currentKeys:
-                    rampCounterDownEn = True
-                    rampCounterDown = 220
+class Audio:
+    def __init__(self, sampleRate, amp):
+        self.sampleRate = sampleRate
+        self.oscDTMF = OscDTMF(44100)
+        self.envelope = AREnvelope(44100, 0.005, 0.005)
+        self.amp = amp
+        self.num = None
+
+        sd.OutputStream(
+            samplerate=self.sampleRate,
+            blocksize=64,
+            channels=1,
+            callback=self.audioCallback).start()
+
+    def play(self, num):
+        self.num = num
+        self.envelope.attack()
+
+    def stop(self, num):
+        self.num = num
+        self.envelope.release()
+
+    def audioCallback(self, outdata, frames, time, status):
+        if self.envelope.active:
+            buf = self.oscDTMF.get(self.num, frames)
+            env = self.envelope.get(frames)
+            buf = self.amp * buf * env
+        else:
+            buf = np.zeros(frames)
+
+        buf = buf.reshape(-1, 1)
+        outdata[:] = buf
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
