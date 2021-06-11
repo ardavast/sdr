@@ -53,17 +53,13 @@ class AREnvelope:
         self.amp = 0
         self.state = 'off'
 
-    def attack(self):
-        self.state = 'attack'
-
-    def release(self):
-        self.state = 'release'
-
     def get(self, length):
         buf = []
+
         for i in range(length):
             if self.state == 'off':
                 self.amp = 0
+
             if self.state == 'attack':
                 if self.attackSamples and self.amp < 1:
                     self.amp += 1/self.attackSamples
@@ -71,6 +67,7 @@ class AREnvelope:
                         self.amp = 1
                 else:
                     self.amp = 1
+
             elif self.state == 'release':
                 if self.releaseSamples and self.amp > 0:
                     self.amp -= 1/self.releaseSamples
@@ -80,6 +77,7 @@ class AREnvelope:
                 else:
                     self.amp = 0
                     self.state = 'off'
+
             buf.append(self.amp)
 
         return np.array(buf)
@@ -139,11 +137,11 @@ class Audio:
 
     def play(self, num):
         self.num = num
-        self.envelope.attack()
+        self.envelope.state = 'attack'
 
     def stop(self, num):
         self.num = num
-        self.envelope.release()
+        self.envelope.state = 'release'
 
     def audioCallback(self, outdata, frames, time, status):
         if self.envelope.state == 'off':
