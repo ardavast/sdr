@@ -51,11 +51,10 @@ class AREnvelope:
         self.attackSamples = round(A * sampleRate)
         self.releaseSamples = round(R * sampleRate)
         self.amp = 0
-        self.active = False
+        self.state = 'off'
 
     def attack(self):
         self.state = 'attack'
-        self.active = True
 
     def release(self):
         self.state = 'release'
@@ -63,6 +62,8 @@ class AREnvelope:
     def get(self, length):
         buf = []
         for i in range(length):
+            if self.state == 'off':
+                self.amp = 0
             if self.state == 'attack':
                 if self.attackSamples and self.amp < 1:
                     self.amp += 1/self.attackSamples
@@ -74,11 +75,11 @@ class AREnvelope:
                 if self.releaseSamples and self.amp > 0:
                     self.amp -= 1/self.releaseSamples
                     if self.amp < 0:
-                        self.active = False
                         self.amp = 0
+                        self.state = 'off'
                 else:
-                    self.active = False
                     self.amp = 0
+                    self.state = 'off'
             buf.append(self.amp)
 
         return np.array(buf)
@@ -145,12 +146,12 @@ class Audio:
         self.envelope.release()
 
     def audioCallback(self, outdata, frames, time, status):
-        if self.envelope.active:
+        if self.envelope.state == 'off':
+            buf = np.zeros(frames)
+        else:
             buf = self.oscDTMF.get(self.num, frames)
             env = self.envelope.get(frames)
             buf = self.amp * buf * env
-        else:
-            buf = np.zeros(frames)
 
         buf = buf.reshape(-1, 1)
         outdata[:] = buf
