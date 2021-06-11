@@ -83,24 +83,6 @@ class AREnvelope:
 
         return np.array(buf)
 
-
-def audioCallback(outdata, frames, time, status):
-    if currentKeys:
-        buf = oscDTMF.get(currentKeys[-1], frames)
-        env = envelope.get(frames)
-        buf = amp * buf * env
-    else:
-        if envelope.active:
-            if lastKey:
-                buf = oscDTMF.get(lastKey, frames)
-                env = envelope.get(frames)
-                buf = amp * buf * env
-        else:
-            buf = np.zeros(frames)
-
-    buf = buf.reshape(-1, 1)
-    outdata[:] = buf
-
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
