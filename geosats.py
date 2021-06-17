@@ -3,6 +3,7 @@
 
 from datetime import timedelta
 from operator import itemgetter
+
 from tabulate import tabulate
 
 from skyfield import units
@@ -13,6 +14,7 @@ sofiaLat = N * units.Angle(degrees=(42, 41, 51.04)).degrees
 sofiaLon = E * units.Angle(degrees=(23, 19, 26.94)).degrees
 sofiaElevation = 562
 sofia = wgs84.latlon(sofiaLat, sofiaLon, sofiaElevation)
+
 
 def isGeostationary(sat):
     """Return True if the satellite moves by less than 1 deg in 48 hours."""
@@ -26,7 +28,7 @@ def isGeostationary(sat):
     dt = startDt
     while dt <= endDt:
         t = ts.from_datetime(dt)
-        alt, az, d = (sat - sofia).at(t).altaz()
+        alt, az, _ = (sat - sofia).at(t).altaz()
         alt = alt.degrees
         az = az.degrees
         if alt < minAlt:
@@ -40,14 +42,12 @@ def isGeostationary(sat):
         dt += timedelta(hours=1)
     return maxAlt - minAlt < 1 and maxAz - minAz < 1
 
-ts = load.timescale()
 
+ts = load.timescale()
 satellites = load.tle_file('https://www.celestrak.com/NORAD/elements/geo.txt')
-satellites = satellites
-satellites = filter(isGeostationary, satellites)
 
 satPos = []
-for sat in satellites:
+for sat in filter(isGeostationary, satellites):
     alt, az, d = (sat - sofia).at(sat.epoch).altaz()
 
     alt = alt.degrees
